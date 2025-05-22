@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              Int           @id @default(autoincrement())
+  name            String
+  email           String        @unique
+  password        String
+  course          Int           @default(1)
+  score           Int           @default(0)
+  finishedCourses Int[]        @default([])
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  settings        UserSettings?
+  attempts        TestAttempt[]
+}
+
+model Course {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  orderNumber Int
+  tests       Test[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Test {
+  id            Int           @id @default(autoincrement())
+  courseId      Int
+  question      String
+  options       Json          // Array of possible answers
+  correctAnswer Int
+  points        Int          @default(1)
+  course        Course        @relation(fields: [courseId], references: [id])
+  attempts      TestAttempt[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model TestAttempt {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  testId    Int
+  answer    Int
+  isCorrect Boolean
+  points    Int
+  user      User     @relation(fields: [userId], references: [id])
+  test      Test     @relation(fields: [testId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model UserSettings {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  fontSize  Int      @default(16)
+  theme     String   @default("light")
+  language  String   @default("uk")
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+} 
