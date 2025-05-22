@@ -67,20 +67,44 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
     
+    // Validate input
+    if (!email || !password) {
+        return res.status(400).json({ 
+            error: 'Email and password are required',
+            details: {
+                email: !email ? 'Email is required' : null,
+                password: !password ? 'Password is required' : null
+            }
+        });
+    }
+
     try {
-        const user = await prisma.user.findUnique({
-            where: { email: email },
-            include: { settings: true }
+        // Find user by email
+        const user = await prisma.user.findFirst({
+            where: {
+                email: email.toString().toLowerCase()
+            },
+            include: {
+                settings: true
+            }
         });
 
+        // Check if user exists and password matches
         if (!user || user.password !== password) {
-            return res.status(401).json({ error: 'Invalid credentials' });
+            return res.status(401).json({ 
+                error: 'Invalid email or password'
+            });
         }
 
-        res.json(user);
+        // Return user data without password
+        const { password: _, ...userData } = user;
+        res.json(userData);
     } catch (err) {
         console.error('Login error:', err);
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ 
+            error: 'Server error',
+            details: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
     }
 });
 
