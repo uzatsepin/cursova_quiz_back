@@ -6,7 +6,6 @@ This is the backend for a quiz application that provides API endpoints for user 
 
 1. Create a `.env` file in the root directory with the following content:
 ```
-DATABASE_URL=postgresql://andrii:Pa3wtj1X@159.69.201.149:5434/cursova
 PORT=3000
 ```
 
